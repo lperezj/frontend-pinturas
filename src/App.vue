@@ -6,18 +6,15 @@
             <div class="col-lg-10 offset-lg-1">
                 <div class="card mt-4">
                      
-                    <!-- <div class="input-group">
-                        <input type="text" v-model="color" 
+                    <div class="input-group">
+                        <input type="text"
+                            v-model="filtro"
                             class="form-control form-control-lg" 
-                            placeholder="Agregar pintura">
-                        <div class="input-group-append">
-                            <button
-                                v-on:click="agregarColor()"
-                                class="btn btn-success btn-lg">Agregar</button>
-                        </div>
+                            placeholder="Filtrar"
+                            v-on:keyup="FiltrarColor">
                     </div>
-                    <br>   -->
-                    <div class="row row-cols-1 row-cols-md-5 g-4">
+                    <br>  
+                    <div class="row row-cols-1 row-cols-md-6 g-4">
                         <div class="col" v-for="(color, index) of listColores" :key="index">
                             <div class="card">
                                 <img v-bind:src="color.imagen" class="img-thumbnail">
@@ -61,10 +58,9 @@
 
     export default {
         name: 'ListPinturas',
-        mounted(){
-            console.log("Recorriendo los datos");
-            onValue(settingsRef, (color) => {                     
-                color.forEach((childColor) => {
+        mounted(){            
+            onValue(settingsRef, (c) => {                     
+                c.forEach((childColor) => {
                     this.listColores.push({ 
                         nombre: childColor.child("Nombre").val(),
                         numero: childColor.child("InfoColor").val(),
@@ -74,25 +70,20 @@
                         code: childColor.child("Referencia").val(),
                         imagen: childColor.child("Imagen").val()
                     })
-                })                
+                })
             }, 
             {
                 onlyOnce: false
-            });            
+            });
 
+            this.listTodosColores = this.listColores;
             console.log('Elementos Guardados', this.listColores.length)
         },
         data(){
             return{
-                color: '',
+                filtro: '',
                 listColores: [],
-                listDemoColores : [                    
-                     { nombre: 'Blanco', numero: 'Num. 1', precio: '8,90', favorito: false, disponible: false, code: 90000110, imagen: 'https://vpiera.com/16002-large_default/oleo-titan-blanco-titan-n-01-tubo-60-ml.jpg' },
-                     { nombre: 'Amarillo Napoles', numero: 'Num. 8', precio: '8,90 €', favorito: false, disponible: false, code: 90000110, imagen: 'https://vpiera.com/16010-llistat_productes/oleo-titan-amarillo-napoles-n08-tubo-60-ml.jpg' },
-                     { nombre: 'Amarillo Cadmio Limon', numero: 'Num. 11', precio: '19,90 €', favorito: false, disponible: false, code: 90000110, imagen: 'https://vpiera.com/16016-llistat_productes/oleo-titan-amarillo-cadmio-limon-n-11-tubo-60-ml.jpg' },
-                     { nombre: 'Amarillo Stil de Grain', numero: 'Num. 19', precio: '19,90 €', favorito: false, disponible: false, code: 90000110, imagen: 'https://vpiera.com/16024-llistat_productes/oleo-titan-amarillo-stil-de-grain-n19-tubo-60-ml.jpg' },
-                     { nombre: 'Rojo Cadmio', numero: 'Num. 24', precio: '29,93 €', favorito: false, disponible: false, code: 90000110, imagen: 'https://vpiera.com/16050-llistat_productes/oleo-titan-rojo-cadmio-oscuro-tubo-n-24-60-ml.jpg' },
-                ]
+                listTodosColores : []
             }
         },
         methods:{
@@ -105,13 +96,21 @@
             //     this.listColores.push(color);
             //     this.color = '';
             // },
+            FiltrarColor(){
+                console.log("Color Filtrar:",this.filtro);
+                this.listColores = this.listTodosColores.filter(c => c.nombre.includes(this.filtro));                
+            },
+
+            QuitarFiltrarColor(){
+                this.listColores = this.listTodosColores;
+            },
 
             CheckAsMine(color, index){
-                this.listDemoColores[index].disponible = !color.disponible;
+                this.listColores[index].disponible = !color.disponible;
             },
 
             CheckAsFavorite(color, index){
-                this.listDemoColores[index].favorito = !color.favorito;
+                this.listColores[index].favorito = !color.favorito;
             }
         }
     }
