@@ -35,8 +35,8 @@
                                         <span class="cursor"> 
                                             <i v-bind:class="[color.disponible ? 'fas fa-bookmark' : 'far fa-bookmark']" v-on:click="CheckAsMine(color, index)"></i>                                            
                                         </span>
-                                        <span class="cursor"> 
-                                            <i v-bind:class="[color.favorito ? 'fas fa-star' : 'far fa-star']" v-on:click="CheckAsFavorite(color, index)"></i>
+                                        <span class="cursor">                                             
+                                            <i v-bind:class="[color.favorito ? 'fas fa-check-circle' : 'far fa-check-circle']" v-on:click="CheckAsFavorite(color, index)"></i>
                                         </span>                                        
                                     </div>
                                 </div>                                
@@ -52,15 +52,17 @@
 <script>        
     //import { auth, app } from "./utils/firebase";
     import { app } from "./utils/firebase";    
-    import { getDatabase, ref, onValue, update } from 'firebase/database'
+    import { getDatabase, ref, onValue, set } from 'firebase/database'
 
     const db = getDatabase(app);
     const settingsRef = ref(db, 'Oleo')
     export default {
         name: 'ListPinturas',
-        mounted(){            
-            alert("Cargando Datos");
-            onValue(settingsRef, (c) => {                       
+        mounted(){                        
+            onValue(settingsRef, (c) => {
+                if (this.listColores.length != 0){
+                    return;
+                }                
                 c.forEach((childColor) => {
                     this.listColores.push({ 
                         id: childColor.key,
@@ -73,7 +75,8 @@
                         imagen: childColor.child("Imagen").val(),
                         imagen_large: childColor.child("ImagenLarge").val(),
                     })
-                })
+                });
+                //alert('[Mounted.OnValue] Se han cargado ' + this.listColores.length + ' registros');
             }, 
             {
                 onlyOnce: false
@@ -109,26 +112,24 @@
 
             CheckAsMine(color, index){                
                 var _disponible = !color.disponible;
-                                
+
                 this.listColores[index].disponible = _disponible; 
-                const db = getDatabase();
-                
-                const updates = {};                
-                updates['/Oleo/' + color.id + '/Available'] = _disponible;
-                                
-                update(ref(db), updates);
+                if (this.show_mis_pinturas && !_disponible){                    
+                    this.listColores.splice(index,1);
+                }
+                                                
+                var refAvailable = ref(db, 'Oleo/' + color.id + '/Available/');
+                set(refAvailable, _disponible);
+                //alert('[CheckAsMine] Se han cargado ' + this.listColores.length + ' registros');
             },
 
             CheckAsFavorite(color, index){
                 var _favorite = !color.favorito;
                 this.listColores[index].favorito = _favorite;
-                const db = getDatabase();
-                
-                const updates = {};                
-                updates['/Oleo/' + color.id + '/Favorite'] = _favorite;
-
-                this.listColores = [];
-                update(ref(db), updates);
+                                
+                var refAvailable = ref(db, 'Oleo/' + color.id + '/Favorite/');
+                set(refAvailable, _favorite);
+                //alert('[CheckAsFavorite] Se han cargado ' + this.listColores.length + ' registros');
             }
         }
     }
