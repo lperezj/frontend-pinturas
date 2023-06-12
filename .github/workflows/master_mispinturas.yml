@@ -52,5 +52,5 @@ jobs:
         with:
           app-name: 'mispinturas'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_1C049B9A3F804FE8BAA3AF47DBD11398 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_3AC23A6C1CF44C2A80EE6E6AF107DADA }}
           package: .
