@@ -14,7 +14,7 @@
                             v-on:keyup="FiltrarColor">
                     </div>
                     <br>  
-                    <div class="row row-cols-1 row-cols-md-6 g-4">
+                    <div class="row row-cols-1 row-cols-md-5 g-4">
                         <div class="col" v-for="(color, index) of listColores" :key="index">
                             <div class="card">
                                 <img v-bind:src="color.imagen" class="img-thumbnail">
