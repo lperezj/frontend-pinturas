@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="margin: 15px;">
         <h1 class="display-4 text-center">Mis Pinturas</h1>
         <hr>
         <div class="row">         
@@ -32,11 +32,11 @@
                                     
                                     <p class="card-text">{{color.precio}}</p>
                                     <div class="list-group-item d-flex justify-content-between align-items-end">
-                                        <span class="cursor"> 
-                                            <i v-bind:class="[color.disponible ? 'fas fa-bookmark' : 'far fa-bookmark']" v-on:click="CheckAsMine(color, index)"></i>                                            
-                                        </span>
                                         <span class="cursor">                                             
-                                            <i v-bind:class="[color.favorito ? 'fas fa-check-circle' : 'far fa-check-circle']" v-on:click="CheckAsFavorite(color, index)"></i>
+                                            <i v-bind:class="[color.disponible ? 'fas fa-bookmark fa-lg' : 'far fa-bookmark fa-lg']" v-on:click="CheckAsMine(color, index)"></i>                                            
+                                        </span>
+                                        <span class="cursor">                                            
+                                            <i v-bind:class="[color.favorito ? 'fas fa-check-circle fa-lg' : 'far fa-check-circle fa-lg']" v-on:click="CheckAsFavorite(color, index)"></i>
                                         </span>                                        
                                     </div>
                                 </div>                                
@@ -49,8 +49,7 @@
     </div>
 </template>
  
-<script>        
-    //import { auth, app } from "./utils/firebase";
+<script>            
     import { app } from "./utils/firebase";    
     import { getDatabase, ref, onValue, set } from 'firebase/database'
 
@@ -94,13 +93,13 @@
         },
         methods:{            
             FiltrarColor(){                
-                this.listColores = this.listTodosColores.filter(c => c.nombre.includes(this.filtro));                
+                this.listColores = this.listTodosColores.filter(c => c.nombre.toUpperCase().includes(this.filtro.toUpperCase()));                
             },
 
             ShowMePictures(){                
                 this.show_mis_pinturas = !this.show_mis_pinturas;                
                 if (this.show_mis_pinturas){
-                    this.listColores = this.listTodosColores.filter(c => c.nombre.includes(this.filtro) && c.disponible);                        
+                    this.listColores = this.listTodosColores.filter(c => c.nombre.toUpperCase().includes(this.filtro.toUpperCase()) && c.disponible);                        
                 }else{                    
                     this.listColores = this.listTodosColores;                    
                 }                                
