@@ -6,14 +6,25 @@
             <div class="col-lg-10 offset-lg-1">
                 <div class="card mt-4">
                      
-                    <div class="input-group" style="align-items: center;">
+                    <!-- <div class="input-group" style="align-items: center;">
                         <input type="text"
                             v-model="filtro"
                             class="form-control form-control-lg" 
                             placeholder="Filtrar"
                             v-on:keyup="FiltrarColor"/>
                         <i id="id-show-me-pictures" v-bind:class="[this.show_mis_pinturas ? 'fas fa-bookmark fa-lg': 'far fa-bookmark fa-lg']" style="margin:10px" v-on:click="ShowMePictures()"></i>                        
-                    </div>
+                    </div> -->
+                    <ul class="nav nav-tabs">
+                        <li class="nav-item">
+                            <a v-bind:class="[this.show_all ? 'nav-link active': 'nav-link']" id="tab_todas" href="#" v-on:click="QuitarFiltrarColor()">Ver todas</a>
+                        </li>
+                        <li class="nav-item">
+                            <a v-bind:class="[this.show_mis_pinturas ? 'nav-link active': 'nav-link']" id="tab_mias" href="#" v-on:click="ShowMePictures()">Mis pinturas</a>
+                        </li>
+                        <li class="nav-item">
+                            <a v-bind:class="[this.show_mis_futuras_pinturas ? 'nav-link active': 'nav-link']" id="tab_quiero" href="#" v-on:click="ShowMeWant()">Las quiero</a>
+                        </li>
+                    </ul>
                     <br>  
                     <div class="row row-cols-1 row-cols-md-5 g-4">
                         <div class="col" v-for="(color, index) of listColores" :key="index">
@@ -88,7 +99,9 @@
                 filtro: '',
                 listColores: [],
                 listTodosColores : [],
-                show_mis_pinturas: false
+                show_all: true,
+                show_mis_pinturas: false,
+                show_mis_futuras_pinturas: false,
             }
         },
         methods:{            
@@ -97,16 +110,36 @@
             },
 
             ShowMePictures(){                
-                this.show_mis_pinturas = !this.show_mis_pinturas;                
-                if (this.show_mis_pinturas){
-                    this.listColores = this.listTodosColores.filter(c => c.nombre.toUpperCase().includes(this.filtro.toUpperCase()) && c.disponible);                        
-                }else{                    
-                    this.listColores = this.listTodosColores;                    
-                }                                
+                // this.show_mis_pinturas = !this.show_mis_pinturas;                
+                // if (this.show_mis_pinturas){
+                //     this.listColores = this.listTodosColores.filter(c => c.nombre.toUpperCase().includes(this.filtro.toUpperCase()) && c.disponible);                        
+                // }else{                    
+                //     this.listColores = this.listTodosColores;                    
+                // }
+                this.listColores = this.listTodosColores.filter(c => c.disponible);
+                this.show_all = false;
+                this.show_mis_pinturas = true;
+                this.show_mis_futuras_pinturas = false;
+            },
+
+            ShowMeWant(){                
+                // this.show_mis_pinturas = !this.show_mis_pinturas;                
+                // if (this.show_mis_pinturas){
+                //     this.listColores = this.listTodosColores.filter(c => c.nombre.toUpperCase().includes(this.filtro.toUpperCase()) && c.disponible);                        
+                // }else{                    
+                //     this.listColores = this.listTodosColores;                    
+                // }
+                this.listColores = this.listTodosColores.filter(c => c.favorito);
+                this.show_all = false;
+                this.show_mis_pinturas = false;
+                this.show_mis_futuras_pinturas = true;
             },
            
             QuitarFiltrarColor(){
                 this.listColores = this.listTodosColores;
+                this.show_all = true;
+                this.show_mis_pinturas = false;
+                this.show_mis_futuras_pinturas = false;
             },
 
             CheckAsMine(color, index){                
