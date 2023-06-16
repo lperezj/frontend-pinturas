@@ -1,4 +1,8 @@
 <template>
+    <router-view />
+  </template>
+
+<!-- <template>
     <LoginComponent/>
 </template>
  
@@ -10,7 +14,4 @@
             LoginComponent
         }
     }
-</script>
-
-<style scoped>
-</style> 
+</script> -->

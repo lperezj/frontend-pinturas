@@ -30,7 +30,7 @@
                     <label class="form-label" for="form2Example27">Contraseña</label>
                   </div>
 
-                  <div class="pt-1 mb-4">
+                  <div class="pt-1 mb-4">                    
                     <button class="btn btn-dark btn-lg btn-block" type="button" v-on:click="LoginUserPassword()">Login</button>
                   </div>
 
@@ -51,6 +51,7 @@
 
 <script>
   import { auth } from "../utils/firebase";
+  import { router } from "../router/index.js"
   import { signInWithEmailAndPassword } from 'firebase/auth';
         
   export default {
@@ -67,7 +68,8 @@
           if (this.user != "" && this.password != ""){
             signInWithEmailAndPassword(auth, this.email, this.password).then((userCredential) => {              
               this.user = userCredential;
-                            
+              console.log("Usuario Logeado:" + this.user.user.uid);
+              router.push({name:'Pinturas'});              
             })
             .catch((error) => {
               alert(error.message);
