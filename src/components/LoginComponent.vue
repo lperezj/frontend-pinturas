@@ -49,13 +49,20 @@
 <!-- Section: Design Block -->    
 </template>
 
-<script>
-  import { auth } from "../utils/firebase";
-  import { router } from "../router/index.js"
-  import { signInWithEmailAndPassword } from 'firebase/auth';
+<script>  
+  import { router } from '../router/index.js'
+  import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+  import Cookies from 'js-cookie';
         
   export default {
       name: 'LoginComponent',
+      mounted(){
+        const uid = Cookies.get("USER_UID");
+        if (uid != null && uid != ""){
+            console.log("Usuario logeado:" + uid);
+            router.push({name:'Pinturas'});
+        }        
+      },
       data(){
         return{
           email : '',
@@ -65,11 +72,13 @@
       },
       methods:{
         LoginUserPassword(){
+          const auth = getAuth();          
           if (this.user != "" && this.password != ""){
             signInWithEmailAndPassword(auth, this.email, this.password).then((userCredential) => {              
               this.user = userCredential;
               console.log("Usuario Logeado:" + this.user.user.uid);
-              router.push({name:'Pinturas'});              
+              Cookies.set("USER_UID", this.user.user.uid, { expires: 7 }); // Expires in 7 days              
+              router.push({name:'Pinturas'});
             })
             .catch((error) => {
               alert(error.message);
