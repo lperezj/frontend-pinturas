@@ -1,6 +1,6 @@
 <template>
     <div style="margin: 15px;">
-        <h1 class="display-4 text-center">Mis Pinturas</h1>
+        <h1 class="display-4 text-center">Pinturas</h1>
         <hr>
         <div class="row">         
             <div class="col-lg-10 offset-lg-1">
@@ -38,11 +38,11 @@
                                         
                                         <p class="card-text">{{color.precio}}</p>
                                         <div class="list-group-item d-flex justify-content-between align-items-end">
-                                            <span class="cursor">                                             
-                                                <i v-bind:class="[color.disponible ? 'fas fa-bookmark fa-lg' : 'far fa-bookmark fa-lg']" v-on:click="CheckAsMine(color, index)"></i>                                            
+                                            <span class="cursor">                                                                                             
+                                                <i v-bind:class="[color.is_mine ? 'fas fa-bookmark fa-lg' : 'far fa-bookmark fa-lg']" v-on:click="CheckAsMine(color, index)"></i>
                                             </span>
-                                            <span class="cursor">                                            
-                                                <i v-bind:class="[color.favorito ? 'fas fa-check-circle fa-lg' : 'far fa-check-circle fa-lg']" v-on:click="CheckAsWish(color, index)"></i>
+                                            <span class="cursor">                                                
+                                                <i v-bind:class="[color.is_wish ? 'fas fa-check-circle fa-lg' : 'far fa-check-circle fa-lg']" v-on:click="CheckAsWish(color, index)"></i>
                                             </span>                                        
                                         </div>
                                     </div>                                
@@ -66,10 +66,10 @@
                                 <p class="card-text fw-bold" style="margin-left: 10px;">{{color.nombre}}</p>
                                 <div class="list-group-item d-flex justify-content-between align-items-end">
                                     <span class="cursor" style="margin-left: 20px;">
-                                        <i v-bind:class="[color.disponible ? 'fas fa-bookmark fa-lg' : 'far fa-bookmark fa-lg']" v-on:click="CheckAsMine(color, index)"></i>
+                                        <i v-bind:class="[color.is_mine ? 'fas fa-bookmark fa-lg' : 'far fa-bookmark fa-lg']" v-on:click="CheckAsMine(color, index)"></i>
                                     </span>
                                     <span class="cursor">
-                                        <i v-bind:class="[color.favorito ? 'fas fa-check-circle fa-lg' : 'far fa-check-circle fa-lg']" v-on:click="CheckAsWish(color, index)"></i>
+                                        <i v-bind:class="[color.is_wish ? 'fas fa-check-circle fa-lg' : 'far fa-check-circle fa-lg']" v-on:click="CheckAsWish(color, index)"></i>
                                     </span>                                        
                                 </div>
                                 <p></p>
@@ -86,45 +86,71 @@
 <script>            
     import { app } from "../utils/firebase";    
     import { router } from "../router/index.js"
-    import { getDatabase, ref, onValue, set } from 'firebase/database'    
+    import { getDatabase, ref, get, onValue, child, set} from 'firebase/database'    
     import Cookies from 'js-cookie';
 
     const db = getDatabase(app);
-    // const settingsRef = ref(db, 'Oleos')
     export default {
         name: 'PinturasComponent',
-        mounted(){
+        mounted(){            
             const uid = Cookies.get("USER_UID");
             if (uid == null || uid == ""){
                 console.log("Usuario no logeado:" + uid);
                 router.push({name:'Login'});
             }
-            else{
-                const settingsRef = ref(db, 'Paints');
-                console.log("SettingRef:" + settingsRef);
-                onValue(settingsRef, (c) => {
+            else{                
+                const settingsRef = ref(db, 'Paints');                
+                onValue(settingsRef, (c) => {                    
                     if (this.listColores.length != 0){
                         return;
                     }                
+                    
+                    const dbRef = ref(getDatabase());
+                    const promises = [];
+
                     c.forEach((childColor) => {
-                        this.listColores.push({ 
+                        var item = {
                             id: childColor.key,
                             nombre: childColor.child("Nombre").val(),
                             numero: childColor.child("InfoColor").val(),
-                            precio:  childColor.child("Precio").val(),
-                            favorito: childColor.child("Favorite").val(),
-                            disponible: childColor.child("Available").val(),
+                            precio: childColor.child("Precio").val(),
                             code: childColor.child("Referencia").val(),
                             imagen: childColor.child("Imagen").val(),
                             imagen_large: childColor.child("ImagenLarge").val(),
-                        })
+                            is_mine: false,
+                            is_wish: false
+                        };
+
+                        promises.push(
+                            get(child(dbRef, 'MyPaints/' + uid + '/' + childColor.key)).then((snapshot) => {
+                            if (snapshot.exists()) {
+                                item.is_mine = true;
+                            }})
+                        );
+
+                        promises.push(
+                            get(child(dbRef, 'WishList/' + uid + '/' + childColor.key)).then((snapshot) => {
+                                if (snapshot.exists()) {
+                                    item.is_wish = true;
+                                }})
+                        );
+
+                        //console.log(item);
+                        this.listColores.push(item);                        
                     });
-                    //alert('[Mounted.OnValue] Se han cargado ' + this.listColores.length + ' registros');
+
+                    Promise.all(promises)
+                    .then(() => {
+                        console.log("Todas las consultas han finalizado");                        
+                    })
+                    .catch((error) => {
+                        console.error("Error en las consultas:", error);
+                    });                 
                 }, 
                 {
                     onlyOnce: false
                 });
-
+                
                 this.listTodosColores = this.listColores;
             }
         },
@@ -138,20 +164,20 @@
                 show_mis_futuras_pinturas: false,
             }
         },
-        methods:{            
+        methods:{
             FiltrarColor(){                
                 this.listColores = this.listTodosColores.filter(c => c.nombre.toUpperCase().includes(this.filtro.toUpperCase()));                
             },
 
             ShowMePictures(){
-                this.listColores = this.listTodosColores.filter(c => c.disponible);
+                this.listColores = this.listTodosColores.filter(c => c.is_mine);
                 this.show_all = false;
                 this.show_mis_pinturas = true;
                 this.show_mis_futuras_pinturas = false;
             },
 
             ShowMeWant(){
-                this.listColores = this.listTodosColores.filter(c => c.favorito);
+                this.listColores = this.listTodosColores.filter(c => c.is_wish);
                 this.show_all = false;
                 this.show_mis_pinturas = false;
                 this.show_mis_futuras_pinturas = true;
@@ -166,23 +192,34 @@
 
             CheckAsMine(color, index){                
                 const uid = Cookies.get("USER_UID");
-                var _disponible = !color.disponible;
+                var _disponible = !color.is_mine;
                 
-                this.listColores[index].disponible = _disponible; 
+                this.listColores[index].is_mine = _disponible; 
                 if (this.show_mis_pinturas && !_disponible){                    
                     this.listColores.splice(index,1);
                 }
 
-                set(ref(db, 'MyPaints/' +  uid + "/" + this.listColores[index].id), '');
+                if (_disponible){
+                    set(ref(db, 'MyPaints/' +  uid + "/" + this.listColores[index].id), '');
+                }
+                else{
+                    //TODO Borrarlo de la BD
+                }
+
+                
             },
 
-            CheckAsWish(color, index){
-                alert("Me lo pido");                
+            CheckAsWish(color, index){                
                 const uid = Cookies.get("USER_UID");
-                var _favorite = !color.favorito;
-                this.listColores[index].favorito = _favorite;
-                                
-                set(ref(db, 'WishList/' +  uid + "/" + this.listColores[index].id), '');
+                var _is_wish = !color.is_wish;
+                this.listColores[index].is_wish = _is_wish;
+                if (_is_wish){
+                    set(ref(db, 'WishList/' +  uid + "/" + this.listColores[index].id), '');
+                }
+                else{
+                    // TODO Borrarlo de la BD
+                }
+                
             },
 
             Logout(){
