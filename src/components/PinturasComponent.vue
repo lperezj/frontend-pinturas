@@ -42,7 +42,7 @@
                                                 <i v-bind:class="[color.disponible ? 'fas fa-bookmark fa-lg' : 'far fa-bookmark fa-lg']" v-on:click="CheckAsMine(color, index)"></i>                                            
                                             </span>
                                             <span class="cursor">                                            
-                                                <i v-bind:class="[color.favorito ? 'fas fa-check-circle fa-lg' : 'far fa-check-circle fa-lg']" v-on:click="CheckAsFavorite(color, index)"></i>
+                                                <i v-bind:class="[color.favorito ? 'fas fa-check-circle fa-lg' : 'far fa-check-circle fa-lg']" v-on:click="CheckAsWish(color, index)"></i>
                                             </span>                                        
                                         </div>
                                     </div>                                
@@ -69,7 +69,7 @@
                                         <i v-bind:class="[color.disponible ? 'fas fa-bookmark fa-lg' : 'far fa-bookmark fa-lg']" v-on:click="CheckAsMine(color, index)"></i>
                                     </span>
                                     <span class="cursor">
-                                        <i v-bind:class="[color.favorito ? 'fas fa-check-circle fa-lg' : 'far fa-check-circle fa-lg']" v-on:click="CheckAsFavorite(color, index)"></i>
+                                        <i v-bind:class="[color.favorito ? 'fas fa-check-circle fa-lg' : 'far fa-check-circle fa-lg']" v-on:click="CheckAsWish(color, index)"></i>
                                     </span>                                        
                                 </div>
                                 <p></p>
@@ -90,7 +90,7 @@
     import Cookies from 'js-cookie';
 
     const db = getDatabase(app);
-    const settingsRef = ref(db, 'Oleo')
+    // const settingsRef = ref(db, 'Oleos')
     export default {
         name: 'PinturasComponent',
         mounted(){
@@ -100,6 +100,8 @@
                 router.push({name:'Login'});
             }
             else{
+                const settingsRef = ref(db, 'Paints');
+                console.log("SettingRef:" + settingsRef);
                 onValue(settingsRef, (c) => {
                     if (this.listColores.length != 0){
                         return;
@@ -141,26 +143,14 @@
                 this.listColores = this.listTodosColores.filter(c => c.nombre.toUpperCase().includes(this.filtro.toUpperCase()));                
             },
 
-            ShowMePictures(){                
-                // this.show_mis_pinturas = !this.show_mis_pinturas;                
-                // if (this.show_mis_pinturas){
-                //     this.listColores = this.listTodosColores.filter(c => c.nombre.toUpperCase().includes(this.filtro.toUpperCase()) && c.disponible);                        
-                // }else{                    
-                //     this.listColores = this.listTodosColores;                    
-                // }
+            ShowMePictures(){
                 this.listColores = this.listTodosColores.filter(c => c.disponible);
                 this.show_all = false;
                 this.show_mis_pinturas = true;
                 this.show_mis_futuras_pinturas = false;
             },
 
-            ShowMeWant(){                
-                // this.show_mis_pinturas = !this.show_mis_pinturas;                
-                // if (this.show_mis_pinturas){
-                //     this.listColores = this.listTodosColores.filter(c => c.nombre.toUpperCase().includes(this.filtro.toUpperCase()) && c.disponible);                        
-                // }else{                    
-                //     this.listColores = this.listTodosColores;                    
-                // }
+            ShowMeWant(){
                 this.listColores = this.listTodosColores.filter(c => c.favorito);
                 this.show_all = false;
                 this.show_mis_pinturas = false;
@@ -175,25 +165,24 @@
             },
 
             CheckAsMine(color, index){                
+                const uid = Cookies.get("USER_UID");
                 var _disponible = !color.disponible;
-
+                
                 this.listColores[index].disponible = _disponible; 
                 if (this.show_mis_pinturas && !_disponible){                    
                     this.listColores.splice(index,1);
                 }
-                                                
-                var refAvailable = ref(db, 'Oleo/' + color.id + '/Available/');
-                set(refAvailable, _disponible);
-                //alert('[CheckAsMine] Se han cargado ' + this.listColores.length + ' registros');
+
+                set(ref(db, 'MyPaints/' +  uid + "/" + this.listColores[index].id), '');
             },
 
-            CheckAsFavorite(color, index){
+            CheckAsWish(color, index){
+                alert("Me lo pido");                
+                const uid = Cookies.get("USER_UID");
                 var _favorite = !color.favorito;
                 this.listColores[index].favorito = _favorite;
                                 
-                var refAvailable = ref(db, 'Oleo/' + color.id + '/Favorite/');
-                set(refAvailable, _favorite);
-                //alert('[CheckAsFavorite] Se han cargado ' + this.listColores.length + ' registros');
+                set(ref(db, 'WishList/' +  uid + "/" + this.listColores[index].id), '');
             },
 
             Logout(){
