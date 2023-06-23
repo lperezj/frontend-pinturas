@@ -86,25 +86,39 @@
 <script>            
     import { app } from "../utils/firebase";    
     import { router } from "../router/index.js"
-    import { getDatabase, ref, get, onValue, child, set} from 'firebase/database'    
+    import { getDatabase, ref, get, onValue, child, set, update} from 'firebase/database'    
     import Cookies from 'js-cookie';
 
     const db = getDatabase(app);
+    const uid = Cookies.get("USER_UID");
     export default {
         name: 'PinturasComponent',
-        mounted(){            
-            const uid = Cookies.get("USER_UID");
+        mounted(){                        
+            console.log(uid)
             if (uid == null || uid == ""){
                 console.log("Usuario no logeado:" + uid);
                 router.push({name:'Login'});
             }
-            else{                
-                const settingsRef = ref(db, 'Paints');                
-                onValue(settingsRef, (c) => {                    
-                    if (this.listColores.length != 0){
-                        return;
-                    }                
-                    
+            else{                                
+                this.CargarPinturas(uid);
+            }
+        },
+        data(){
+            return{
+                filtro: '',
+                listColores: [],
+                listTodosColores : [],
+                show_all: true,
+                show_mis_pinturas: false,
+                show_mis_futuras_pinturas: false,
+            }
+        },
+        methods:{
+            CargarPinturas(uid){                
+                console.log("Entro Cargar Pinturas");
+                const settingsRef = ref(db, 'Paints');
+                onValue(settingsRef, (c) => {
+                    console.log("Entro en onValue");
                     const dbRef = ref(getDatabase());
                     const promises = [];
 
@@ -135,8 +149,7 @@
                                 }})
                         );
 
-                        //console.log(item);
-                        this.listColores.push(item);                        
+                        this.listColores.push(item);
                     });
 
                     Promise.all(promises)
@@ -152,19 +165,7 @@
                 });
                 
                 this.listTodosColores = this.listColores;
-            }
-        },
-        data(){
-            return{
-                filtro: '',
-                listColores: [],
-                listTodosColores : [],
-                show_all: true,
-                show_mis_pinturas: false,
-                show_mis_futuras_pinturas: false,
-            }
-        },
-        methods:{
+            },
             FiltrarColor(){                
                 this.listColores = this.listTodosColores.filter(c => c.nombre.toUpperCase().includes(this.filtro.toUpperCase()));                
             },
@@ -190,36 +191,42 @@
                 this.show_mis_futuras_pinturas = false;
             },
 
-            CheckAsMine(color, index){                
+            CheckAsMine(color, index){
                 const uid = Cookies.get("USER_UID");
                 var _disponible = !color.is_mine;
                 
-                this.listColores[index].is_mine = _disponible; 
-                if (this.show_mis_pinturas && !_disponible){                    
-                    this.listColores.splice(index,1);
-                }
-
+                this.listColores[index].is_mine = _disponible;                                 
                 if (_disponible){
                     set(ref(db, 'MyPaints/' +  uid + "/" + this.listColores[index].id), '');
                 }
                 else{
-                    //TODO Borrarlo de la BD
-                }
+                    const updates = {};                    
+                    updates['MyPaints/' + uid + '/' +  this.listColores[index].id] = null;
 
-                
+                    update(ref(db), updates);                    
+                    if (this.show_mis_pinturas && !_disponible){                        
+                        this.listColores.splice(index,1);                                                
+                    }                    
+                }
             },
 
-            CheckAsWish(color, index){                
+            CheckAsWish(color, index){
                 const uid = Cookies.get("USER_UID");
-                var _is_wish = !color.is_wish;
-                this.listColores[index].is_wish = _is_wish;
-                if (_is_wish){
+                var _disponible = !color.is_mine;
+                
+                this.listColores[index].is_mine = _disponible;                                 
+                if (_disponible){
                     set(ref(db, 'WishList/' +  uid + "/" + this.listColores[index].id), '');
                 }
                 else{
-                    // TODO Borrarlo de la BD
+                    const updates = {};                    
+                    updates['WishList/' + uid + '/' +  this.listColores[index].id] = null;
+
+                    update(ref(db), updates);                    
+                    if (this.show_mis_pinturas && !_disponible){                        
+                        this.listColores.splice(index,1);                                                
+                    }                    
                 }
-                
             },
 
             Logout(){
