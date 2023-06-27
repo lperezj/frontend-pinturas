@@ -115,11 +115,9 @@
         },
         methods:{
             CargarPinturas(uid){   
-                var auxListColores = [];             
-                console.log("Entro Cargar Pinturas");
+                var auxListColores = [];                             
                 const settingsRef = ref(db, 'Paints');
-                onValue(settingsRef, (c) => {
-                    console.log("Entro en onValue");
+                onValue(settingsRef, (c) => {                    
                     const dbRef = ref(getDatabase());
                     const promises = [];
 
@@ -130,11 +128,12 @@
                             numero: childColor.child("InfoColor").val(),
                             precio: childColor.child("Precio").val(),
                             code: childColor.child("Referencia").val(),
-                            imagen: childColor.child("Imagen").val(),
-                            imagen_large: childColor.child("ImagenLarge").val(),
+                            imagen: "../assets/" + childColor.child("Imagen").val(),
+                            imagen_large: "../assets/" + childColor.child("ImagenLarge").val(),                            
                             is_mine: false,
                             is_wish: false
                         };
+                        console.log("ITEM: " + item.imagen_large)
 
                         promises.push(
                             get(child(dbRef, 'MyPaints/' + uid + '/' + childColor.key)).then((snapshot) => {
@@ -149,17 +148,12 @@
                                     item.is_wish = true;
                                 }})
                         );
-
-                        console.log("Meto en listColores: " + item);
                         auxListColores.push(item);
                     });
 
                     Promise.all(promises)
-                    .then(() => {
-                        console.log("Todas las consultas han finalizado");
-                        console.log("Asigno listColores");
-                        this.listColores = auxListColores;
-                        console.log("Asigno listTodosColores");
+                    .then(() => {                        
+                        this.listColores = auxListColores;                        
                         this.listTodosColores = auxListColores;
                     })
                     .catch((error) => {
@@ -174,24 +168,21 @@
                 this.listColores = this.listTodosColores.filter(c => c.nombre.toUpperCase().includes(this.filtro.toUpperCase()));                
             },
 
-            ShowMePictures(){
-                console.log("Call ShowMePictures");
+            ShowMePictures(){                
                 this.listColores = this.listTodosColores.filter(c => c.is_mine);
                 this.show_all = false;
                 this.show_mis_pinturas = true;
                 this.show_mis_futuras_pinturas = false;
             },
 
-            ShowMeWant(){
-                console.log("Call ShowMeWant");
+            ShowMeWant(){                
                 this.listColores = this.listTodosColores.filter(c => c.is_wish);
                 this.show_all = false;
                 this.show_mis_pinturas = false;
                 this.show_mis_futuras_pinturas = true;
             },
            
-            QuitarFiltrarColor(){
-                console.log("Call QuitarFiltrarColor");
+            QuitarFiltrarColor(){                
                 this.listColores = this.listTodosColores;
                 this.show_all = true;
                 this.show_mis_pinturas = false;
