@@ -128,8 +128,8 @@
                             numero: childColor.child("InfoColor").val(),
                             precio: childColor.child("Precio").val(),
                             code: childColor.child("Referencia").val(),
-                            imagen: "../assets/" + childColor.child("Imagen").val(),
-                            imagen_large: "../assets/" + childColor.child("ImagenLarge").val(),                            
+                            imagen: "../assets/paints/" + childColor.child("Imagen").val(),
+                            imagen_large: "../assets/paints/" + childColor.child("ImagenLarge").val(),                            
                             is_mine: false,
                             is_wish: false
                         };
