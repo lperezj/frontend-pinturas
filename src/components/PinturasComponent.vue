@@ -102,19 +102,20 @@
             else{                                
                 this.CargarPinturas(uid);
             }
-        },
+        },        
         data(){
             return{
                 filtro: '',
                 listColores: [],
                 listTodosColores : [],
-                show_all: true,
+                show_all: false,
                 show_mis_pinturas: false,
                 show_mis_futuras_pinturas: false,
             }
         },
         methods:{
-            CargarPinturas(uid){                
+            CargarPinturas(uid){   
+                var auxListColores = [];             
                 console.log("Entro Cargar Pinturas");
                 const settingsRef = ref(db, 'Paints');
                 onValue(settingsRef, (c) => {
@@ -149,12 +150,17 @@
                                 }})
                         );
 
-                        this.listColores.push(item);
+                        console.log("Meto en listColores: " + item);
+                        auxListColores.push(item);
                     });
 
                     Promise.all(promises)
                     .then(() => {
-                        console.log("Todas las consultas han finalizado");                        
+                        console.log("Todas las consultas han finalizado");
+                        console.log("Asigno listColores");
+                        this.listColores = auxListColores;
+                        console.log("Asigno listTodosColores");
+                        this.listTodosColores = auxListColores;
                     })
                     .catch((error) => {
                         console.error("Error en las consultas:", error);
@@ -162,15 +168,14 @@
                 }, 
                 {
                     onlyOnce: false
-                });
-                
-                this.listTodosColores = this.listColores;
+                });                                
             },
             FiltrarColor(){                
                 this.listColores = this.listTodosColores.filter(c => c.nombre.toUpperCase().includes(this.filtro.toUpperCase()));                
             },
 
             ShowMePictures(){
+                console.log("Call ShowMePictures");
                 this.listColores = this.listTodosColores.filter(c => c.is_mine);
                 this.show_all = false;
                 this.show_mis_pinturas = true;
@@ -178,6 +183,7 @@
             },
 
             ShowMeWant(){
+                console.log("Call ShowMeWant");
                 this.listColores = this.listTodosColores.filter(c => c.is_wish);
                 this.show_all = false;
                 this.show_mis_pinturas = false;
@@ -185,6 +191,7 @@
             },
            
             QuitarFiltrarColor(){
+                console.log("Call QuitarFiltrarColor");
                 this.listColores = this.listTodosColores;
                 this.show_all = true;
                 this.show_mis_pinturas = false;
