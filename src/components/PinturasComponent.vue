@@ -1,27 +1,26 @@
 <template>
     <div style="margin: 15px;">
         <h1 class="display-4 text-center">Pinturas</h1>
-        <hr>
+        <hr>        
+        <ul class="nav nav-tabs">
+            <li class="nav-item" v-on:click="QuitarFiltrarColor()">
+                <a v-bind:class="[this.show_all ? 'nav-link active': 'nav-link']" id="tab_todas" href="#">Ver todas</a>
+            </li>
+            <li class="nav-item" v-on:click="ShowMePictures()">
+                <a v-bind:class="[this.show_mis_pinturas ? 'nav-link active': 'nav-link']" id="tab_mias" href="#">Mis pinturas</a>
+            </li>
+            <li class="nav-itemnpm" v-on:click="ShowMeWant()">
+                <a v-bind:class="[this.show_mis_futuras_pinturas ? 'nav-link active': 'nav-link']" id="tab_quiero" href="#">Las quiero</a>
+            </li>     
+            <li class="nav-item" v-on:click="Logout()">
+                <a class="nav-link" id="tab_logout" href="#">Salir</a>
+            </li>
+        </ul>
         <div class="row">         
-            <div class="col-lg-10 offset-lg-1">
-                <div class="card mt-4">
-                    <ul class="nav nav-tabs">
-                        <li class="nav-item">
-                            <a v-bind:class="[this.show_all ? 'nav-link active': 'nav-link']" id="tab_todas" href="#" v-on:click="QuitarFiltrarColor()">Ver todas</a>
-                        </li>
-                        <li class="nav-item">
-                            <a v-bind:class="[this.show_mis_pinturas ? 'nav-link active': 'nav-link']" id="tab_mias" href="#" v-on:click="ShowMePictures()">Mis pinturas</a>
-                        </li>
-                        <li class="nav-item">
-                            <a v-bind:class="[this.show_mis_futuras_pinturas ? 'nav-link active': 'nav-link']" id="tab_quiero" href="#" v-on:click="ShowMeWant()">Las quiero</a>
-                        </li>                                        
-                        <li class="nav-item ms-auto">
-                            <a class="nav-link" href="#" v-on:click="Logout()">Logout</a>
-                        </li>
-                    </ul>                                        
-                    <br>
+            <div class="col-lg-12">
+                <div class="card">
                     <div class="d-none d-sm-none d-md-block">
-                        <div class="row row-cols-1 row-cols-md-5 g-4">
+                        <div class="row row-cols-1 row-cols-md-6 g-4">
                             <div class="col" v-for="(color, index) of listColores" :key="index">
                                 <div class="card">                                
                                     <img v-bind:src="color.imagen_large" class="img-thumbnail" style="border: 0; aspect-ratio: 1/1;">
@@ -29,14 +28,14 @@
                                         <p class="card-text fw-bold">{{color.nombre}}</p>
                                         <div class="list-group-item d-flex justify-content-between align-items-end">
                                             <span>
-                                                <p class="card-text">{{color.numero}}</p>
+                                                <p class="card-text">{{color.precio}}</p>
                                             </span>
                                             <span>
                                                 <p class="card-text">{{color.code}}</p>
                                             </span>
                                         </div>
-                                        
-                                        <p class="card-text">{{color.precio}}</p>
+                                        <p></p>
+                                        <!-- <p class="card-text">{{color.precio}}</p> -->
                                         <div class="list-group-item d-flex justify-content-between align-items-end">
                                             <span class="cursor">                                                                                             
                                                 <i v-bind:class="[color.is_mine ? 'fas fa-bookmark fa-lg' : 'far fa-bookmark fa-lg']" v-on:click="CheckAsMine(color, index)"></i>
@@ -76,7 +75,7 @@
                                 <p></p>
                             </div>
                         </div>
-                </div>
+                    </div>
                 </div>
             </div>
         </div>                
@@ -93,8 +92,7 @@
     const uid = Cookies.get("USER_UID");
     export default {
         name: 'PinturasComponent',
-        mounted(){                        
-            console.log(uid)
+        mounted(){
             if (uid == null || uid == ""){
                 console.log("Usuario no logeado:" + uid);
                 router.push({name:'Login'});
@@ -108,7 +106,7 @@
                 filtro: '',
                 listColores: [],
                 listTodosColores : [],
-                show_all: false,
+                show_all: true,
                 show_mis_pinturas: false,
                 show_mis_futuras_pinturas: false,
             }
@@ -124,7 +122,7 @@
                     c.forEach((childColor) => {
                         var item = {
                             id: childColor.key,
-                            nombre: childColor.child("Nombre").val(),
+                            nombre: childColor.child("NombreCorto").val(),
                             numero: childColor.child("InfoColor").val(),
                             precio: childColor.child("Precio").val(),
                             code: childColor.child("Referencia").val(),
@@ -210,9 +208,9 @@
 
             CheckAsWish(color, index){
                 const uid = Cookies.get("USER_UID");
-                var _disponible = !color.is_mine;
+                var _disponible = !color.is_wish;
                 
-                this.listColores[index].is_mine = _disponible;                                 
+                this.listColores[index].is_wish = _disponible;                                 
                 if (_disponible){
                     set(ref(db, 'WishList/' +  uid + "/" + this.listColores[index].id), '');
                 }
